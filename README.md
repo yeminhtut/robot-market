@@ -7,8 +7,8 @@ where on the right side of the screen should display a cart that show a list of 
 
 ## Contact Details
 Please fill in your name and email
-- Name: ____
-- Email: ____
+- Name: Ye Min Htut
+- Email: yehtut.it@gmail.com
 
 ## Features
 
