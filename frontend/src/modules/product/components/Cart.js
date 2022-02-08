@@ -12,16 +12,17 @@ const Cart = (props) => {
     const { cartItems, editCartItem } = props;
     const [total, setTotal] = useState(0)
     useEffect(() => {
-        if (cartItems.length > 0) {
-            setTotal(cartItems.reduce((a, b) => a + +b.price, 0))
-        }
+        setTotal(cartItems.reduce((a, b) => a + +b.price, 0))
     }, [cartItems])
     return (
         <div className="col-md-4">
             <Card>
                 <CardHeader>Summary</CardHeader>
                 <CardBody>
-                    <CardText>Cart is empty.</CardText>
+                    {cartItems.length == 0 && (
+                        <CardText>Cart is empty.</CardText>
+                    )}
+                    
                     {cartItems && cartItems.length > 0 && cartItems.map((product, i) => (
                         <ShoppingCartItem
                             item={product}
