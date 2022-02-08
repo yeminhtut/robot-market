@@ -6,13 +6,6 @@ import './index.css';
 import store from './store';
 import App from './App';
 
-// ReactDOM.render(
-//   <React.StrictMode>
-//     <App />
-//   </React.StrictMode>,
-//   document.getElementById('root')
-// );
-
 ReactDOM.render(
   <Provider store={store}>
       <App />
