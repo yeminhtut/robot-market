@@ -1,10 +1,10 @@
 import * as React from 'react';
+import ProductListContainer from './modules/product/containers/ProductListContainer.jsx';
 
 function App() {
   return (
     <div className="App">
-      <h1>Robot Market</h1>
-      {/*Add your code here*/}
+      <ProductListContainer />
     </div>
   );
 }
