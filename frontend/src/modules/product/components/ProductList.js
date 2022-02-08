@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import map from "lodash/map";
-import moment from 'moment';
-import Select from 'react-select';
-import groupBy from 'lodash/groupBy'
-import filter from 'lodash/filter'
-import uniqBy from 'lodash/uniqBy'
+import moment from "moment";
+import Select from "react-select";
+import filter from "lodash/filter";
+import uniqBy from "lodash/uniqBy";
 import {
     Card,
     CardHeader,
@@ -23,95 +22,121 @@ import {
     Button,
     List,
     Navbar,
-    NavbarBrand
+    NavbarBrand,
+    CardFooter,
 } from "reactstrap";
+import Cart from "./Cart";
 
-const getDateFormat = date => (moment(date).format('DD-MM-YYYY '))
+const getDateFormat = (date) => moment(date).format("DD-MM-YYYY ");
 
 const ProductList = (props) => {
     const { getAllProduct, productList } = props;
-    const [productType, setProductType] = useState([{ label: 'None', value: 'None'}])
+    const [productType, setProductType] = useState([
+        { label: "All Material", value: "None" },
+    ]);
+    const [cartItem, setCartItem] = useState([]);
+    const [renderProductList, setRenderProductList] = useState([]);
+
     useEffect(() => {
         getAllProduct();
     }, [getAllProduct]);
+
     useEffect(() => {
         if (productList.length > 0 && productType.length === 1) {
-            const materialType = uniqBy(map(productList, item => (
-                {
+            const materialType = uniqBy(
+                map(productList, (item) => ({
                     label: item.material,
-                    value: item.material
-                }
-            )), (e) => e.value)
-            setProductType(productType.concat(materialType))
+                    value: item.material,
+                })),
+                (e) => e.value
+            );
+            setProductType(productType.concat(materialType));
+            setRenderProductList(productList);
         }
-    }, [productList])
+    }, [productList]);
+
+    const handleCartItem = (item) => {
+        let addedItem = filter(renderProductList, function (o) {
+            return o.id == item.id;
+        })[0];
+        const { stock } = addedItem;
+        if (addedItem.stock > 0) {
+            addedItem.stock = stock - 1;
+        }
+        setCartItem(cartItem.concat(item));
+    };
+
+    const editCartItem = (item, type, index) => {
+        const { stock } = item;
+        let actionItem = filter(renderProductList, function (o) {
+            return o.id == item.id;
+        })[0];
+        if (type == "remove") {
+            //increment stock
+            actionItem.stock = stock + 1;
+            let filteredArray = cartItem.filter((item, i) => i !== index);
+            setCartItem(filteredArray);
+        } else {
+            handleCartItem(item);
+        }
+    };
+
+    const handleMaterialChange = (e) => {
+        if (e.value !== "None") {
+            const filterProducts = filter(productList, (p) => {
+                return p.material == e.value;
+            });
+            setRenderProductList(filterProducts);
+        } else {
+            setRenderProductList(productList);
+        }
+    };
+
     return (
         <>
             <Header />
             <Container>
                 <div className="row">
-                <div className="col-md-4 cart">
-                <Select
-                    className="basic-single"
-                    classNamePrefix="select"
-                    defaultValue={productType[0]}
-                    name="color"
-                    options={productType}
-                    />
-                </div>
-                
-                </div>
-            <div className="row">
-                <div className="col-md-8 cart">
-                    <div className="row">
-                        {productList.map((product) => (
-                            <ProductItem item={product} key={product.name} />
-                        ))}
+                    <div className="col-md-4 cart">
+                        <Select
+                            className="basic-single"
+                            classNamePrefix="select"
+                            defaultValue={productType[0]}
+                            name="color"
+                            options={productType}
+                            onChange={handleMaterialChange}
+                        />
                     </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-8 cart">
+                        <div className="row">
+                            {renderProductList.map((product) => (
+                                <ProductItem
+                                    item={product}
+                                    key={product.name}
+                                    handleCartItem={handleCartItem}
+                                />
+                            ))}
+                        </div>
 
-                    <div className="back-to-shop">
-                        <a href="#">&leftarrow;</a>
-                        <span className="text-muted">Back to shop</span>
+                        <div className="back-to-shop">
+                            <a href="#">&leftarrow;</a>
+                            <span className="text-muted">Back to shop</span>
+                        </div>
                     </div>
+                    <Cart cartItems={cartItem} editCartItem={editCartItem} />
                 </div>
-                <div className="col-md-4 summary">
-                    <div>
-                        <h5>
-                            <b>Summary</b>
-                        </h5>
-                    </div>
-                    <hr />
-                    <div className="row">
-                        <div className="col">ITEMS 3</div>
-                        <div className="col text-right">&euro; 132.00</div>
-                    </div>
-                    <form>
-                        <p>SHIPPING</p>{" "}
-                        <select>
-                            <option className="text-muted">
-                                Standard-Delivery- &euro;5.00
-                            </option>
-                        </select>
-                        <p>GIVE CODE</p>{" "}
-                        <input id="code" placeholder="Enter your code" />
-                    </form>
-                    <div className="row">
-                        <div className="col">TOTAL PRICE</div>
-                        <div className="col text-right">&euro; 137.00</div>
-                    </div>{" "}
-                    <button className="btn">CHECKOUT</button>
-                </div>
-            </div>
-        </Container>
+            </Container>
         </>
-        
     );
 };
 
 const ProductItem = (props) => {
-    const { item } = props;
-    const count = 0;
-    const changeCart = () => {};
+    const { item, handleCartItem } = props;
+    const addToCart = () => {
+        handleCartItem(item);
+    };
     return (
         <Col lg="4">
             <Card className="card-lift--hover shadow border-0 mb-4">
@@ -124,32 +149,21 @@ const ProductItem = (props) => {
                         <List type="unstyled">
                             <li>Price: ฿{item.price}</li>
                             <li>Stock: {item.stock}</li>
-                            <li>Created Date: {getDateFormat(item.createdAt)}</li>
-                            <li><label>Material</label> {item.material}</li>
+                            <li>
+                                Created Date: {getDateFormat(item.createdAt)}
+                            </li>
+                            <li>Material: {item.material}</li>
                         </List>
                     </div>
 
-                    <div className="cart-action">
-                        <div
-                            className="text-lg font-bold text-center pl-3 py-2 border-r border-gray-200 cursor-pointer select-none active:bg-blue-100"
-                            onClick={() => {
-                                changeCart({ type: "remove", item });
-                            }}
-                        >
-                            -
-                        </div>
-                        <div className="text-lg text-center py-2 select-none">
-                            {count}
-                        </div>
-                        <div
-                            className="text-lg font-bold text-center pr-3 py-2 border-l border-gray-200 cursor-pointer select-none active:bg-blue-100"
-                            onClick={() => {
-                                changeCart({ type: "add", item });
-                            }}
-                        >
-                            +
-                        </div>
-                    </div>
+                    <Button
+                        className="w-100 mb-0 br-0"
+                        color={item.stock > 0 ? "primary" : "secondary"}
+                        disabled={item.stock > 0 ? false : true}
+                        onClick={addToCart}
+                    >
+                        Add to cart
+                    </Button>
                 </div>
             </Card>
         </Col>
@@ -159,17 +173,11 @@ const ProductItem = (props) => {
 const Header = () => {
     return (
         <div>
-  <Navbar
-    color="light"
-    expand="md"
-    light
-  >
-    <NavbarBrand href="/">
-      Robot Market
-    </NavbarBrand>
-  </Navbar>
-</div>
-    )
-}
+            <Navbar color="light" expand="md" light>
+                <NavbarBrand href="/">Robot Market</NavbarBrand>
+            </Navbar>
+        </div>
+    );
+};
 
 export default ProductList;
