@@ -12,8 +12,16 @@ code {
     monospace;
 }
 
+.main-content {
+  margin-top: 60px;
+}
+
 .mb-4 {
   margin-bottom: 10px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
 }
 
 .cart-action {
